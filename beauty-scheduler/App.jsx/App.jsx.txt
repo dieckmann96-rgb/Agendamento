@@ -1,0 +1,154 @@
+import { useState, useEffect } from 'react';
+
+// Variáveis globais do Firebase (assumidas pelo ambiente)
+const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+
+// Mock de dados para mostrar a interface antes de conectar o Firebase
+const mockData = {
+  userName: "Usuário Não Autenticado",
+  services: [
+    { id: 1, name: "Corte de Cabelo", price: 50.00, duration: 30 },
+    { id: 2, name: "Manicure", price: 35.00, duration: 45 },
+    { id: 3, name: "Design de Sobrancelha", price: 40.00, duration: 30 },
+  ],
+  schedule: [], // Nenhum agendamento inicial
+};
+
+const App = () => {
+  const [data, setData] = useState(mockData);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [currentPage, setCurrentPage] = useState('home'); // Estado para navegação
+
+  // Simulação de inicialização e carregamento
+  useEffect(() => {
+    // Aqui é onde normalmente inicializaríamos o Firebase e faríamos a autenticação.
+    // Por enquanto, vamos apenas simular um pequeno atraso.
+    if (firebaseConfig) {
+      console.log("Firebase Configuração Detectada:", firebaseConfig);
+      // Você adicionaria a lógica de inicialização aqui.
+    } else {
+      console.warn("Variáveis do Firebase não detectadas. Usando Mock Data.");
+    }
+    
+    // Simula carregamento de dados
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen bg-gray-50">
+        <div className="text-xl font-semibold text-indigo-600 animate-pulse">
+          Carregando Agendador de Beleza...
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex justify-center items-center min-h-screen bg-red-100 p-4">
+        <div className="text-xl font-semibold text-red-700">
+          Erro ao Carregar: {error.message}
+        </div>
+      </div>
+    );
+  }
+  
+  // Componente de Navegação Simples (Switch/Case para React)
+  const renderPage = () => {
+    switch (currentPage) {
+      case 'home':
+        return (
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold text-gray-800">Serviços Disponíveis</h2>
+            <p className="text-gray-600">Selecione um serviço para agendar ou veja seus horários.</p>
+            
+            {/* Lista de Serviços */}
+            <div className="grid grid-cols-1 gap-4">
+              {data.services.map(service => (
+                <div 
+                  key={service.id} 
+                  className="p-4 bg-white rounded-xl shadow-md flex justify-between items-center transition duration-300 hover:shadow-lg cursor-pointer"
+                  onClick={() => alert(`Agendar: ${service.name}`)} // Substituiremos por um modal real depois
+                >
+                  <div>
+                    <p className="text-lg font-semibold text-indigo-600">{service.name}</p>
+                    <p className="text-sm text-gray-500">Duração: {service.duration} min</p>
+                  </div>
+                  <div className="text-xl font-bold text-gray-800">R$ {service.price.toFixed(2).replace('.', ',')}</div>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-8 pt-4 border-t border-gray-200">
+                <button 
+                  onClick={() => setCurrentPage('my-schedule')}
+                  className="w-full bg-indigo-500 text-white font-semibold py-3 px-4 rounded-xl hover:bg-indigo-600 transition duration-300 shadow-md"
+                >
+                  Ver Meus Agendamentos ({data.schedule.length})
+                </button>
+            </div>
+          </div>
+        );
+
+      case 'my-schedule':
+        return (
+          <div className="space-y-6">
+            <h2 className="text-2xl font-bold text-gray-800">Meus Agendamentos</h2>
+            <div className="p-4 bg-yellow-50 text-yellow-800 rounded-xl shadow-md">
+              Ainda não implementamos a conexão com o banco de dados (Firebase).
+            </div>
+            
+            <p className="text-gray-600">Você não possui agendamentos ativos.</p>
+            
+            <button 
+              onClick={() => setCurrentPage('home')}
+              className="w-full bg-gray-400 text-white font-semibold py-3 px-4 rounded-xl hover:bg-gray-500 transition duration-300 shadow-md"
+            >
+              Voltar para Serviços
+            </button>
+          </div>
+        );
+      
+      default:
+        return <div>Página não encontrada</div>;
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-100 flex justify-center p-4 sm:p-8">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-6 sm:p-8">
+        
+        {/* Header */}
+        <header className="mb-8 border-b pb-4">
+          <h1 className="text-3xl font-extrabold text-indigo-700">
+            Agendador de Beleza
+          </h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Logado como: {data.userName}
+          </p>
+        </header>
+
+        {/* Conteúdo da Página */}
+        <main>
+          {renderPage()}
+        </main>
+
+        {/* Aviso */}
+        <footer className="mt-10 pt-4 border-t text-center text-xs text-gray-400">
+          <p>Projeto de Estudo | ID do App: {appId}</p>
+        </footer>
+        
+      </div>
+    </div>
+  );
+};
+
+export default App;
+
